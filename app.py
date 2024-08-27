@@ -1,6 +1,7 @@
 import os
 from flask import Flask, request, jsonify
 import yt_dlp
+import instaloader
 
 app = Flask(__name__)
 
@@ -11,7 +12,10 @@ def extract_video_data():
         return jsonify({'error': 'No URL provided'}), 400
 
     try:
-        return extract_using_ytdlp(url)
+        if 'instagram.com' in url:
+            return extract_using_instaloader(url)
+        else:
+            return extract_using_ytdlp(url)
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
@@ -37,6 +41,30 @@ def extract_using_ytdlp(url):
             'author': info.get('uploader'),
             'comments': info.get('comment_count'),
             'shares': info.get('repost_count')
+        })
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+def extract_using_instaloader(url):
+    scraperapi_key = "1c8a4d9d153ef5b9950f3f2324ebac45"
+    proxy_url = f"http://scraperapi:{scraperapi_key}@proxy-server.scraperapi.com:8001"
+
+    # Crear una sesión con el proxy en Instaloader
+    L = instaloader.Instaloader()
+    L.context.proxy = proxy_url
+    
+    try:
+        shortcode = url.split('/')[-2]
+        post = instaloader.Post.from_shortcode(L.context, shortcode)
+        
+        likes = post.likes
+        comments = post.comments
+        views = post.video_view_count if post.is_video else None
+
+        return jsonify({
+            'likes': likes,
+            'views': views,
+            'comments': comments
         })
     except Exception as e:
         return jsonify({'error': str(e)}), 500
