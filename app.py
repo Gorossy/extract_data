@@ -1,6 +1,7 @@
 import os
 from flask import Flask, request, jsonify
 import yt_dlp
+import instaloader
 
 app = Flask(__name__)
 
@@ -11,7 +12,10 @@ def extract_video_data():
         return jsonify({'error': 'No URL provided'}), 400
 
     try:
-        return extract_using_ytdlp(url)
+        if 'instagram.com' in url:
+            return extract_using_instaloader(url)
+        else:
+            return extract_using_ytdlp(url)
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
@@ -29,6 +33,23 @@ def extract_using_ytdlp(url):
             'author': info.get('uploader'),
             'comments': info.get('comment_count'),
             'shares': info.get('repost_count')
+        })
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+def extract_using_instaloader(url):
+    try:
+        L = instaloader.Instaloader()
+        shortcode = url.split('/')[-2]
+        post = instaloader.Post.from_shortcode(L.context, shortcode)
+        likes = post.likes
+        comments = post.comments
+        views = post.video_view_count if post.is_video else None
+
+        return jsonify({
+            'likes': likes,
+            'views': views,
+            'comments': comments
         })
     except Exception as e:
         return jsonify({'error': str(e)}), 500
