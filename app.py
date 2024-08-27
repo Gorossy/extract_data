@@ -1,6 +1,6 @@
 from flask import Flask, request, jsonify
 import yt_dlp
-
+import os
 
 
 app = Flask(__name__)
@@ -36,4 +36,4 @@ def extract_using_ytdlp(url):
         return jsonify({'error': str(e)}), 500
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(host='0.0.0.0', port=int(os.environ.get("PORT", 5000)))
