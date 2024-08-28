@@ -1,4 +1,5 @@
 import os
+import requests
 from flask import Flask, request, jsonify
 import yt_dlp
 import instaloader
@@ -17,15 +18,27 @@ def extract_video_data():
 
     for url in urls:
         try:
-            if 'instagram.com' in url:
-                result = extract_using_instaloader(url)
+            if 'tiktok.com/t/' in url:
+                resolved_url = resolve_tiktok_url(url)
             else:
-                result = extract_using_ytdlp(url)
+                resolved_url = url
+
+            if 'instagram.com' in resolved_url:
+                result = extract_using_instaloader(resolved_url)
+            else:
+                result = extract_using_ytdlp(resolved_url)
             results.append(result)
         except Exception as e:
             results.append({'url': url, 'error': str(e)})
 
     return jsonify(results), 200
+
+def resolve_tiktok_url(url):
+    try:
+        response = requests.get(url, allow_redirects=True)
+        return response.url
+    except requests.RequestException as e:
+        return url  # Devuelve la URL original si falla la resolución
 
 def extract_using_ytdlp(url):
     scraperapi_key = "1c8a4d9d153ef5b9950f3f2324ebac45"
