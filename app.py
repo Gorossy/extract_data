@@ -9,17 +9,23 @@ CORS(app)
 
 @app.route('/extract', methods=['POST'])
 def extract_video_data():
-    url = request.json.get('url')
-    if not url:
-        return jsonify({'error': 'No URL provided'}), 400
+    urls = request.json.get('urls')
+    if not urls:
+        return jsonify({'error': 'No URLs provided'}), 400
 
-    try:
-        if 'instagram.com' in url:
-            return extract_using_instaloader(url)
-        else:
-            return extract_using_ytdlp(url)
-    except Exception as e:
-        return jsonify({'error': str(e)}), 500
+    results = []
+
+    for url in urls:
+        try:
+            if 'instagram.com' in url:
+                result = extract_using_instaloader(url)
+            else:
+                result = extract_using_ytdlp(url)
+            results.append(result)
+        except Exception as e:
+            results.append({'url': url, 'error': str(e)})
+
+    return jsonify(results), 200
 
 def extract_using_ytdlp(url):
     scraperapi_key = "1c8a4d9d153ef5b9950f3f2324ebac45"
@@ -34,7 +40,8 @@ def extract_using_ytdlp(url):
     try:
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
             info = ydl.extract_info(url, download=False)
-        return jsonify({
+        return {
+            'url': url,
             'title': info.get('title'),
             'duration': info.get('duration'),
             'view_count': info.get('view_count'),
@@ -43,9 +50,9 @@ def extract_using_ytdlp(url):
             'author': info.get('uploader'),
             'comments': info.get('comment_count'),
             'shares': info.get('repost_count')
-        })
+        }
     except Exception as e:
-        return jsonify({'error': str(e)}), 500
+        return {'url': url, 'error': str(e)}
 
 def extract_using_instaloader(url):
     scraperapi_key = "1c8a4d9d153ef5b9950f3f2324ebac45"
@@ -59,17 +66,14 @@ def extract_using_instaloader(url):
         shortcode = url.split('/')[-2]
         post = instaloader.Post.from_shortcode(L.context, shortcode)
         
-        likes = post.likes
-        comments = post.comments
-        views = post.video_view_count if post.is_video else None
-
-        return jsonify({
-            'likes': likes,
-            'views': views,
-            'comments': comments
-        })
+        return {
+            'url': url,
+            'likes': post.likes,
+            'views': post.video_view_count if post.is_video else None,
+            'comments': post.comments
+        }
     except Exception as e:
-        return jsonify({'error': str(e)}), 500
+        return {'url': url, 'error': str(e)}
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=int(os.environ.get("PORT", 5000)))
