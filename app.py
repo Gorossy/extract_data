@@ -2,8 +2,10 @@ import os
 from flask import Flask, request, jsonify
 import yt_dlp
 import instaloader
+from flask_cors import CORS
 
 app = Flask(__name__)
+CORS(app)
 
 @app.route('/extract', methods=['POST'])
 def extract_video_data():
