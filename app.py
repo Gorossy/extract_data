@@ -92,12 +92,6 @@ def extract_using_instaloader(url):
         }
     except Exception as e:
         return {'url': url, 'error': str(e)}
-    
-@app.route("/cron_trigger", methods=['GET', 'POST'])
-def cron_trigger():
-    # Aquí haces la petición a tu servidor en DigitalOcean
-    response = requests.post("https://blitz-app-u3rzf.ondigitalocean.app/api/cron/example_task")
-    return "Cron job ejecutado", response.status_code
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=int(os.environ.get("PORT", 5000)))
