@@ -1,15 +1,25 @@
 {
-    "version": 2,
-    "builds": [
-      {
-        "src": "app.py",
-        "use": "@vercel/python"
+  "version": 2,
+  "builds": [
+    {
+      "src": "app.py",
+      "use": "@vercel/python"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/(.*)",
+      "dest": "app.py"
+    }
+  ],
+  "crons": [
+    {
+      "path": "https://blitz-app-u3rzf.ondigitalocean.app/api/cron/example_task",
+      "schedule": "*/3 * * * *",
+      "method": "POST",
+      "headers": {
+        "Content-Type": "application/json"
       }
-    ],
-    "routes": [
-      {
-        "src": "/(.*)",
-        "dest": "app.py"
-      }
-    ]
+    }
+  ]
 }
