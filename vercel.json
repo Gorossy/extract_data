@@ -15,8 +15,7 @@
   "crons": [
     {
       "path": "/cron_trigger",
-      "schedule": "*/3 * * * *",
-      "method": "POST"
+      "schedule": "*/3 * * * *"
     }
   ]
 }
