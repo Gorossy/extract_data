@@ -14,12 +14,9 @@
   ],
   "crons": [
     {
-      "path": "https://blitz-app-u3rzf.ondigitalocean.app/api/cron/example_task",
+      "path": "/cron_trigger",
       "schedule": "*/3 * * * *",
-      "method": "POST",
-      "headers": {
-        "Content-Type": "application/json"
-      }
+      "method": "POST"
     }
   ]
 }
